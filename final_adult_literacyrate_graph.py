@@ -36,3 +36,4 @@ Others_countries = ALR.loc[~ALR['ISO Code'].isin(Others)]
 var = sns.barplot(x='ISO Code', y='Total',data =Others_countries)
 var.set(xlabel='Countries Name', ylabel='Total literacy rate')
 plt.show()
+Mini-Project
