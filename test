@@ -1,0 +1,55 @@
+import apache_beam as beam
+from apache_beam.options.pipeline_options import PipelineOptions
+import psycopg2
+from psycopg2 import extras
+
+# Set your Cloud SQL PostgreSQL connection parameters
+connection_config = {
+    'host': 'your_database_host',
+    'port': 'your_database_port',
+    'user': 'your_database_user',
+    'password': 'your_database_password',
+    'database': 'your_database_name',
+}
+
+class ReadFromPostgres(beam.DoFn):
+    def start_bundle(self):
+        # Create a database connection with DictCursor
+        self.conn = psycopg2.connect(
+            cursor_factory=extras.DictCursor,
+            **connection_config
+        )
+        self.cursor = self.conn.cursor()
+
+    def process(self, element):
+        # Execute the query
+        query = "SELECT * FROM your_table"
+        self.cursor.execute(query)
+
+        # Fetch the results as dictionary-like rows
+        for row in self.cursor.fetchall():
+            yield row
+
+    def finish_bundle(self):
+        # Close the database connection
+        self.cursor.close()
+        self.conn.close()
+
+def run_pipeline(argv=None):
+    options = PipelineOptions(argv)
+    p = beam.Pipeline(options=options)
+
+    # Create a PCollection by applying the custom transform
+    data = (
+        p
+        | "Generate Dummy Data" >> beam.Create([None])  # Input element is not used
+        | "Read from PostgreSQL" >> beam.ParDo(ReadFromPostgres())
+        | "Print Data" >> beam.Map(print)
+    )
+
+    result = p.run()
+    result.wait_until_finish()
+
+if __name__ == "__main__":
+    run_pipeline()
+https://github.com/jccatrinck/dataflow-cloud-sql-python
