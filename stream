@@ -7,13 +7,13 @@ st.write("Welcome to our beautiful chatbot! Feel free to chat with me.")
 # Define the chat history container
 chat_container = st.container()
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Initialize chat history (using Jupyter Notebook's namespace)
+if "messages" not in globals():
+    messages = []
 
 # Display chat messages from history on app rerun
 with chat_container:
-    for message in st.session_state.messages:
+    for message in messages:
         if message["role"] == "user":
             st.text_input("You:", value=message["content"], key=message["content"], disabled=True)
         else:
@@ -25,15 +25,14 @@ if prompt:
     # Display user message in chat message container
     st.text_input("You:", prompt, disabled=True)
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    messages.append({"role": "user", "content": prompt})
 
     # Generate response (for demo purposes, echo the user's message)
     response = f"Echo: {prompt}"
     # Display bot response in chat message container
     st.write("🤖", response)  # Prepend a robot emoji to bot's messages
     # Add bot response to chat history
-    st.session_state.messages.append({"role": "bot", "content": response})
+    messages.append({"role": "bot", "content": response})
 
-# Add a button to clear the chat history
-if st.button("Clear Chat History"):
-    st.session_state.messages = []
+# Note: Since we can't persist the state between notebook runs,
+# the chat history will be reset once the notebook is restarted.
